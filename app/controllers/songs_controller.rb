@@ -14,14 +14,14 @@ class SongsController < Sinatra::Base
   end
 
   get '/songs/new' do
-    @genres = Genre.all
     erb :"songs/new"
   end
 
   post '/songs' do
-    @song = Song.create(:name => params[:song][:name])
-
-    artist_entry = params[:song][:artist]
+   
+    @song = Song.create(:name => params[:Name])
+   
+    artist_entry = params["Artist Name"]
     if Artist.find_by(:name => artist_entry)
       artist = Artist.find_by(:name => artist_entry)
     else
@@ -29,7 +29,7 @@ class SongsController < Sinatra::Base
     end
     @song.artist = artist
 
-    genre_selections = params[:song][:genres]
+    genre_selections = params[:genres]
     genre_selections.each do |genre|
       @song.genres << Genre.find(genre)
     end
@@ -38,13 +38,16 @@ class SongsController < Sinatra::Base
 
     flash[:message] = "Successfully created song."
     redirect to "songs/#{@song.slug}"
-
   end
 
   get '/songs/:slug' do
-    slug = params[:slug]
-    @song = Song.find_by_slug(slug)
-    erb :"songs/show"
+    @song = Song.find {|song| song.slug == params[:slug]}
+    erb :'/songs/show'
+  end
+  
+  get '/songs/:slug/edit' do
+    @song = Song.find {|song| song.slug == params[:slug]}
+    erb :'/songs/edit'
   end
 
   patch '/songs/:slug' do
@@ -73,9 +76,5 @@ class SongsController < Sinatra::Base
     redirect to "songs/#{song.slug}"
   end
 
-  get '/songs/:slug/edit' do
-    slug = params[:slug]
-    @song = Song.find_by_slug(slug)
-    erb :"songs/edit"
-  end
+ 
 end
